@@ -10,6 +10,7 @@ captures/
 local.properties
 .gradle/
 build/
+app/libs/*.jar
 
 # OS & Logs
 *.log
