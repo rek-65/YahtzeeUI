@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+     =========================================================
+     FILE: res/values/colors.xml
+     PURPOSE: Centralized color definitions for the application.
+              All colors are organized by system/domain. No
+              magic values. Names describe purpose, not value.
+              Aligns with casino game visual theme.
+     =========================================================
+    -->
+
+
+    <!-- =====================================================
+         LEGACY MATERIAL DESIGN COLORS
+         Retained for compatibility with Material components
+         that reference these names by convention. Do not use
+         directly in new UI — prefer semantic tokens below.
+         ===================================================== -->
+
+    /** Light variant of the legacy Material primary purple tone. */
+    <color name="purple_200">#FFBB86FC</color>
+
+    /** Primary variant of the legacy Material purple tone. */
+    <color name="purple_500">#FF6200EE</color>
+
+    /** Dark variant of the legacy Material primary purple tone. */
+    <color name="purple_700">#FF3700B3</color>
+
+    /** Light variant of the legacy Material secondary teal tone. */
+    <color name="teal_200">#FF03DAC5</color>
+
+    /** Dark variant of the legacy Material secondary teal tone. */
+    <color name="teal_700">#FF018786</color>
+
+    /** Pure black. Legacy Material baseline color. */
+    <color name="black">#FF000000</color>
+
+    /** Pure white. Legacy Material baseline color. */
+    <color name="white">#FFFFFFFF</color>
+
+
+    <!-- =====================================================
+         TABLE SURFACE
+         Colors defining the primary game table environment.
+         Inspired by casino felt and rail conventions.
+         ===================================================== -->
+
+    /**
+    * Primary background color of the casino game table.
+    * Represents the deep green felt surface of a craps or
+    * blackjack table. All gameplay elements render on top
+    * of this color.
+    */
+    <color name="table_felt">#1B5E20</color>
+
+    /**
+    * Surface color for UI panels, cards, and control areas
+    * rendered above the table felt. Deep casino burgundy,
+    * consistent with physical table rail and trim aesthetics.
+    */
+    <color name="table_rail">#5C2D1E</color>
+
+
+    <!-- =====================================================
+         TEXT
+         Semantic text colors for use on table and panel
+         surfaces. Organized by placement context.
+         ===================================================== -->
+
+    /**
+    * Primary readable text color for content rendered
+    * directly on the table felt surface.
+    */
+    <color name="text_on_table">#F5F5F5</color>
+
+    /**
+    * Accent text color used for section headers and labels
+    * that require visual distinction on the table surface.
+    * Warm gold tone consistent with casino signage.
+    */
+    <color name="text_section_header">#F5E9A8</color>
+
+    /**
+    * Text color for disabled UI elements such as inactive
+    * buttons or unavailable actions. Rendered at reduced
+    * visual prominence to communicate unavailability.
+    */
+    <color name="text_disabled">#FF8A7A72</color>
+
+
+    <!-- =====================================================
+         DICE — FACE SYSTEM
+         Colors that define the visible top face of each die.
+         Uses a three-stop system: base, light, and dark to
+         support a subtle 3D surface rendering effect.
+         ===================================================== -->
+
+    /**
+    * Neutral base color of the dice face surface.
+    * Represents the primary ivory/parchment tone of the die.
+    */
+    <color name="dice_face_base">#F2EBD3</color>
+
+    /**
+    * Light variation of the dice face for highlight areas.
+    * Applied to regions simulating direct light exposure.
+    */
+    <color name="dice_face_highlight">#F7F3E3</color>
+
+    /**
+    * Dark variation of the dice face for shaded areas.
+    * Applied to regions simulating ambient shadow on the die.
+    */
+    <color name="dice_face_shadow">#E6DEC2</color>
+
+
+    <!-- =====================================================
+         DICE — EDGE SYSTEM
+         Colors for the physical edges of the die, providing
+         depth and separation between faces.
+         ===================================================== -->
+
+    /**
+    * Highlight color applied to dice edges facing the light
+    * source. Creates the illusion of a beveled, physical edge.
+    */
+    <color name="dice_edge_highlight">#D8D2BE</color>
+
+    /**
+    * Shadow color applied to dice edges facing away from
+    * the light source. Reinforces the three-dimensional
+    * physical form of the die.
+    */
+    <color name="dice_edge_shadow">#BFB8A3</color>
+
+
+    <!-- =====================================================
+         DICE — STATE COLORS
+         Colors that communicate interactive die states to
+         the player. Applied conditionally by game logic.
+         ===================================================== -->
+
+    /**
+    * Background surface color rendered directly behind the dice
+    * in the held state. Distinguishes the held dice area from
+    * the surrounding table felt, providing spatial context for
+    * the player's current hold selection.
+    */
+    <color name="dice_held_background">#5C2D1E</color>
+
+    <!-- =====================================================
+         DICE — PIPS
+         Color definitions for die pip (dot) elements.
+         ===================================================== -->
+
+    /**
+    * Primary color used to render pip dots on all dice faces.
+    * High-contrast black ensures maximum pip readability
+    * against the ivory face surface at any screen size.
+    */
+    <color name="dice_pip">#000000</color>
+
+
+    <!-- =====================================================
+         BUTTONS — DISABLED STATE
+         Colors exclusively for action buttons in a disabled
+         or unavailable interaction state.
+         ===================================================== -->
+
+    /**
+    * Background fill for action buttons in the disabled state.
+    * Visually communicates that the action is currently
+    * unavailable without removing the element from layout.
+    */
+    <color name="button_disabled_background">#3D1E14</color>
+
+    /**
+    * Border color for action buttons in the disabled state.
+    * Maintains button shape definition while reinforcing
+    * the unavailable interaction state.
+    */
+    <color name="button_disabled_border">#4A2419</color>
+
+</resources>

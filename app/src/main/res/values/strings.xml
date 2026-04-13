@@ -1,0 +1,40 @@
+<resources>
+    <string name="app_name">Yahtzee</string>
+
+    <!-- Action Buttons -->
+    <!-- Action Buttons -->
+    <string name="action_roll">Roll</string>
+    <string name="action_exit">Exit</string>
+    <string name="action_play_again">Play Again</string>
+
+    <!-- Sections -->
+    <string name="section_upper">Upper Section</string>
+    <string name="section_lower">Lower Section</string>
+    <string name="section_upper_bonus">Upper Bonus</string>
+
+    <!-- Player -->
+    <string name="label_player">Player %1$d</string>
+
+    <!-- Game Over Dialog -->
+    <string name="dialog_game_over_title">Game Over</string>
+    <string name="dialog_game_over_score">Final Score: %1$d</string>
+
+    <!-- Yahtzee Celebration -->
+    <string name="celebration_yahtzee">YAHTZEE!</string>
+
+    <!-- Score Categories -->
+    <string name="score_ones">ONES</string>
+    <string name="score_twos">TWOS</string>
+    <string name="score_threes">THREES</string>
+    <string name="score_fours">FOURS</string>
+    <string name="score_fives">FIVES</string>
+    <string name="score_sixes">SIXES</string>
+
+    <string name="score_three_of_a_kind">THREE OF A KIND</string>
+    <string name="score_four_of_a_kind">FOUR OF A KIND</string>
+    <string name="score_full_house">FULL HOUSE</string>
+    <string name="score_small_straight">SMALL STRAIGHT</string>
+    <string name="score_large_straight">LARGE STRAIGHT</string>
+    <string name="score_yahtzee">YAHTZEE</string>
+    <string name="score_chance">CHANCE</string>
+</resources>

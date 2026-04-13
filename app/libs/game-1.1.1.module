@@ -1,0 +1,122 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.rekcode.yahtzee",
+    "module": "game",
+    "version": "1.1.1",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.3.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.2.10"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "game-1.1.1.jar",
+          "url": "game-1.1.1.jar",
+          "size": 45296,
+          "sha512": "d2afbfaecf3cabe4d6b69d80c162476cc6f2b439170d7ed67b4a44eead902333dfc8110e9b5432e6b1070e939db24a5030217a9057445436c4a230c44185634e",
+          "sha256": "d3da4ef42de7c641da48e92ec5a0f404ba8edf0f36cc7c804931d51acf8744d4",
+          "sha1": "59a2404477c95da0534c5cc51657a3917ac2bee4",
+          "md5": "5efa8ce3436132bf7f6fc8dd2b03055d"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.2.10"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "game-1.1.1.jar",
+          "url": "game-1.1.1.jar",
+          "size": 45296,
+          "sha512": "d2afbfaecf3cabe4d6b69d80c162476cc6f2b439170d7ed67b4a44eead902333dfc8110e9b5432e6b1070e939db24a5030217a9057445436c4a230c44185634e",
+          "sha256": "d3da4ef42de7c641da48e92ec5a0f404ba8edf0f36cc7c804931d51acf8744d4",
+          "sha1": "59a2404477c95da0534c5cc51657a3917ac2bee4",
+          "md5": "5efa8ce3436132bf7f6fc8dd2b03055d"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "game-1.1.1-sources.jar",
+          "url": "game-1.1.1-sources.jar",
+          "size": 19764,
+          "sha512": "63e55e0d189240481a4282663e7af20cc1e6fef750ba29ced231727f7e82438be2f025ddc5adf8f2617b6bdff57ade0eeb2cd77fe93a4b1943da5d70616fa0d2",
+          "sha256": "079935f57fbeab33ecb18db38aaba5e1fb8ccbb267979c66d9435721a3e417a0",
+          "sha1": "dd95624cadc26e97b3546c8a18ba5005c38d5553",
+          "md5": "95013fa87ee5395b8b70e1b8339d9ce2"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "game-1.1.1-javadoc.jar",
+          "url": "game-1.1.1-javadoc.jar",
+          "size": 261,
+          "sha512": "1487e5a20c9e4d74f298e07c42e96a61be11b7a768c3fbc199ee138cd68e1fc2267d1cfe3f11f288acc05df755315344d052cc5f6f751f126ab4fe1caa5125ea",
+          "sha256": "c6deada2fac53b8ea6523dbda77597b128006674616f140f04df23264c6d1aa3",
+          "sha1": "2ad14aed781c4a73ed4dbb421966d408a0a06686",
+          "md5": "f43436d6bec321290f6af228ad602604"
+        }
+      ]
+    }
+  ]
+}

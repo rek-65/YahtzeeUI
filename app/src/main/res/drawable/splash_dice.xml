@@ -1,0 +1,90 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="1500"
+    android:viewportHeight="1500">
+
+    <group
+        android:translateX="350"
+        android:translateY="200">
+
+        <path
+            android:fillAlpha="0.2"
+            android:fillColor="@color/dice_edge_shadow"
+            android:pathData="M650,520c-45,65 -170,140 -220,165a35,35 0,0 1,-35,0c-50,-28 -170,-100 -220,-165a10,10 0,0 1,0,-12c55,-80 120,-180 260,-180 140,0 185,100 260,180a10,10 0,0 1,0 12z" />
+
+        <path
+            android:fillColor="@color/dice_face_shadow"
+            android:pathData="M704.9,630l-294.29,191.06l0,-340.85l294.29,-191.06l0,340.85z" />
+
+        <path
+            android:fillColor="@color/dice_face_highlight"
+            android:pathData="M97.59,630l294.29,191.06l0,-340.85l-294.29,-191.06l0,340.85z" />
+
+        <path
+            android:fillColor="@color/dice_face_base"
+            android:pathData="M400.14,464.73l-293.19,-191.45l293.19,-156.31l295.39,156.31l-295.39,191.45z" />
+
+        <path
+            android:fillColor="@color/dice_edge_highlight"
+            android:pathData="M106.95,273.28l-9.36,15.87l294.29,191.06l8.26,-15.48l-293.19,-191.45z" />
+
+        <path
+            android:fillColor="@color/dice_edge_highlight"
+            android:pathData="M695.53,273.28l9.37,15.87l-294.29,191.06l-10.47,-15.48l295.39,-191.45z" />
+
+        <path
+            android:fillColor="@color/dice_edge_highlight"
+            android:pathData="M391.88,480.21h18.73v340.85h-18.73z" />
+
+        <path
+            android:fillColor="@color/dice_edge_highlight"
+            android:pathData="M400.14,464.73l-8.26,15.48l18.73,0l-10.47,-15.48z" />
+
+        <path
+            android:fillColor="@color/dice_pip"
+            android:pathData="M326.53,254.89a16.9,28.71 97.07,1 0,4.16 -33.54a16.9,28.71 97.07,1 0,-4.16 33.54z" />
+
+        <path
+            android:fillColor="@color/dice_pip"
+            android:pathData="M537.57,298.78a16.9,28.71 97.07,1 0,4.16 -33.54a16.9,28.71 97.07,1 0,-4.16 33.54z" />
+
+        <path
+            android:fillColor="@color/dice_pip"
+            android:pathData="M397.17,213.3a16.9,28.71 97.07,1 0,4.16 -33.54a16.9,28.71 97.07,1 0,-4.16 33.54z" />
+
+        <path
+            android:fillColor="@color/dice_pip"
+            android:pathData="M396.31,381.95a16.9,28.71 97.07,1 0,4.16 -33.54a16.9,28.71 97.07,1 0,-4.16 33.54z" />
+
+        <path
+            android:fillColor="@color/dice_pip"
+            android:pathData="M255.91,296.47a16.9,28.71 97.07,1 0,4.16 -33.54a16.9,28.71 97.07,1 0,-4.16 33.54z" />
+
+        <path
+            android:fillColor="@color/dice_pip"
+            android:pathData="M466.93,340.37a16.9,28.71 97.07,1 0,4.16 -33.54a16.9,28.71 97.07,1 0,-4.16 33.54z" />
+
+        <path
+            android:fillColor="@color/dice_pip"
+            android:pathData="M230,563.64a30.12,16.11 53.82,1 0,26.01 -19.02a30.12,16.11 53.82,1 0,-26.01 19.02z" />
+
+        <path
+            android:fillColor="@color/dice_pip"
+            android:pathData="M312.02,533.78a30.12,16.11 53.82,1 0,26.01 -19.02a30.12,16.11 53.82,1 0,-26.01 19.02z" />
+
+        <path
+            android:fillColor="@color/dice_pip"
+            android:pathData="M147.96,593.48a30.12,16.11 53.82,1 0,26.01 -19.02a30.12,16.11 53.82,1 0,-26.01 19.02z" />
+
+        <path
+            android:fillColor="@color/dice_pip"
+            android:pathData="M483.54,554.83a30.12,16.11 126.18,1 0,35.56 -48.62a30.12,16.11 126.18,1 0,-35.56 48.62z" />
+
+        <path
+            android:fillColor="@color/dice_pip"
+            android:pathData="M618.75,604.04a30.12,16.11 126.18,1 0,35.56 -48.62a30.12,16.11 126.18,1 0,-35.56 48.62z" />
+
+    </group>
+
+</vector>

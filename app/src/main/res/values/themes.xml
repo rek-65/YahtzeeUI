@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.Yahtzee" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.Yahtzee.Splash" parent="Theme.SplashScreen">
+        <item name="android:windowBackground">@color/table_felt</item>
+
+        <!-- Background color for splash screen -->
+        <item name="windowSplashScreenBackground">@color/table_felt</item>
+
+        <!-- Splash icon -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_dice</item>
+
+        <!-- Optional: icon background (kept transparent for now) -->
+        <item name="windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
+
+        <!-- Theme to apply after splash -->
+        <item name="postSplashScreenTheme">@style/Theme.Yahtzee</item>
+
+    </style>
+</resources>

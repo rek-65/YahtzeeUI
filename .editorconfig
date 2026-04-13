@@ -1,0 +1,42 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+indent_size = 4
+indent_style = space
+insert_final_newline = false
+max_line_length = 100
+tab_width = 4
+
+[*.{kt,kts}]
+# Forces the body expression to start on a new line after the '='
+# whenever the expression itself spans multiple lines.
+ktlint_function_signature_body_expression_wrapping = always
+
+ktlint_standard_multiline-expression-wrapping = disabled
+
+ktlint_standard_no-empty-first-line-in-class-body = disabled
+
+ktlint_standard_no-empty-first-line-in-method-block = disabled
+
+ktlint_standard_trailing-comma-on-call-site = disabled
+
+# Disables the no-trailing-spaces rule specifically
+ktlint_standard_no-trailing-spaces = disabled
+
+ktlint_standard_multiline-if-else = disabled
+
+ktlint_standard_blank-line-between-when-conditions = disabled
+
+ktlint_standard_function-signature = disabled
+
+ktlint_standard_no-consecutive-comments = disabled
+
+# Disables the rule that restricts KDoc locations,
+# specifically those appearing inside modifier lists or blocks.
+ktlint_standard_kdoc = disabled
+
+# Ensure max line length is high enough to accommodate the parameters
+max_line_length = 120
+

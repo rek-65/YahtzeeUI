@@ -1,0 +1,35 @@
+# Gradle files
+.gradle/
+build/
+
+# Local configuration (SDK path, etc.)
+local.properties
+
+# Log/OS Files
+*.log
+.DS_Store
+Thumbs.db
+
+# Built application files
+*.apk
+*.aar
+*.aab
+
+# Android Studio / IntelliJ IDEA
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Keystore / Signing files
+*.jks
+*.keystore
+*.p12
+google-services.json
+
+# Custom secrets file (if you use one for API keys)
+secrets.properties
+
+# KtLint configuration
+.editorconfig
