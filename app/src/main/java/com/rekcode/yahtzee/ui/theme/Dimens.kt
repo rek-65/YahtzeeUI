@@ -35,7 +35,7 @@ object Dimens {
     /**
      * Standard spacing between major vertically stacked UI sections.
      */
-    val SectionSpacing = 16.dp
+    val SectionSpacing = 8.dp
 
     /**
      * Standard spacing between vertically stacked interactive elements
@@ -130,7 +130,7 @@ object Dimens {
     /**
      * Spacing between individual dice elements in the dice display area.
      */
-    val DiceSpacing = 8.dp
+    val DiceSpacing = 5.dp
 
     /**
      * Corner radius applied to the held die background container.
@@ -177,12 +177,12 @@ object Dimens {
     /**
      * Font size for score values and labels in the score sheet.
      */
-    val ScoreTextSize = 16.sp
+    val ScoreTextSize = 14.sp
 
     /**
      * Font size for the player header display.
      */
-    val PlayerHeaderTextSize = 22.sp
+    val PlayerHeaderTextSize = 20.sp
 
     /**
      * Font size applied to button and stepper control labels.

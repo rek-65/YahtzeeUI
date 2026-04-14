@@ -152,7 +152,7 @@ fun GameScreen(
         Column(
             modifier = Modifier.weight(UiConstants.DiceSectionWeight),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top
         ) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(Dimens.DiceSpacing),
@@ -298,7 +298,7 @@ fun GameScreen(
                     vertical = Dimens.ScreenPadding
                 ),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
