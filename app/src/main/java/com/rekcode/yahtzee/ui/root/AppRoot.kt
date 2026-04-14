@@ -39,17 +39,26 @@ import com.rekcode.yahtzee.ui.AppScreen
 fun AppRoot(
     onExitRequested: () -> Unit
 ) {
-    /** Tracks the currently displayed screen. */
+    /**
+     * Navigation state tracking.
+     * Hoisted here to manage transitions between top-level screens.
+     */
     var currentScreen by remember { mutableStateOf(AppScreen.Setup) }
 
     /**
-     * Player count selected on the Setup screen.
-     * Captured here so it can be passed to the game engine on transition to Game.
+     * Configuration state captured during Setup to be passed into the Game engine.
      */
     var playerCount by remember { mutableIntStateOf(UiConstants.DefaultPlayerCount) }
 
-    when (currentScreen) {
+    /**
+     * Unique identifier for the current game session.
+     *
+     * Incremented to force a total UI and state reset when a "Play Again"
+     * event occurs, ensuring no stale game data persists between matches.
+     */
+    var gameInstanceId by remember { mutableIntStateOf(0) }
 
+    when (currentScreen) {
         AppScreen.Setup -> {
             SetupScreen(
                 onStartGame = { selectedCount ->
@@ -62,24 +71,26 @@ fun AppRoot(
 
         AppScreen.Game -> {
             /**
-             * Game controller scoped to the Game screen lifecycle.
-             * Created with the player count selected on the Setup screen.
-             * Recreated on Play Again by cycling through AppScreen.Setup.
+             * The [key] block ensures that when [gameInstanceId] changes:
+             * 1. The previous [GameScreen] and its internal states are fully disposed.
+             * 2. A fresh game controller is instantiated via [com.rekcode.yahtzee.api.createGame].
+             * 3. The UI tree is rebuilt from a clean state.
              */
-            val controller = remember {
-                com.rekcode.yahtzee.api.createGame(numPlayers = playerCount)
-            }
-
-            GameScreen(
-                controller = controller,
-                onExitRequested = {
-                    currentScreen = AppScreen.Setup
-                },
-                onPlayAgainRequested = {
-                    currentScreen = AppScreen.Setup
-                    currentScreen = AppScreen.Game
+            key(gameInstanceId) {
+                val controller = remember {
+                    com.rekcode.yahtzee.api.createGame(numPlayers = playerCount)
                 }
-            )
+
+                GameScreen(
+                    controller = controller,
+                    onExitRequested = {
+                        currentScreen = AppScreen.Setup
+                    },
+                    onPlayAgainRequested = {
+                        gameInstanceId++
+                    }
+                )
+            }
         }
     }
 }

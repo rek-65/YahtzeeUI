@@ -407,11 +407,12 @@ fun GameScreen(
                     )
                 },
                 text = {
+                    val winnerIndex = controller.getWinnerIndex() ?: 0
+                    val scoreLines = (0 until controller.getPlayerCount()).joinToString(separator = "\n") { index ->
+                        "Player ${index + 1}: ${controller.getPlayerFinalScore(index)}"
+                    }
                     Text(
-                        text = stringResource(
-                            id = R.string.dialog_game_over_score,
-                            controller.getPlayerFinalScore(currentPlayerIndex)
-                        ),
+                        text = "$scoreLines\n\n${stringResource(id = R.string.dialog_game_over_winner, winnerIndex + 1)}",
                         fontSize = Dimens.ScoreTextSize,
                         color = colorResource(id = R.color.text_on_table)
                     )
