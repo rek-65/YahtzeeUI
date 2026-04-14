@@ -57,12 +57,12 @@ object UiConstants {
     /**
      * Vertical layout weight assigned to the dice display section.
      */
-    const val DiceSectionWeight = 0.40f
+    const val DiceSectionWeight = 0.38f
 
     /**
      * Vertical layout weight assigned to the score sheet section.
      */
-    const val ScoreSectionWeight = 0.50f
+    const val ScoreSectionWeight = 0.52f
 
     /**
      * Vertical layout weight assigned to the action button section.
