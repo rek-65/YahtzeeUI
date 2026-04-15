@@ -29,30 +29,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rekcode.yahtzee.R
 import com.rekcode.yahtzee.ui.theme.Dimens
+import com.rekcode.yahtzee.ui.theme.UiConstants
 
 /**
- * Constants for dice animation and layout.
- */
-private const val DICE_SIZE_DP = 120          /** Dice box size in dp */
-private const val DICE_OFFSET_Y_DP = 48       /** Base vertical offset for dice in dp */
-private const val BOUNCE_SCALE_MIN = 1.0f     /** Minimum scale factor for dice bounce */
-private const val BOUNCE_SCALE_MAX = 1.08f    /** Maximum scale factor for dice bounce */
-private const val BOUNCE_DURATION_MS = 400    /** Duration of one bounce cycle in milliseconds */
-private const val BOUNCE_OFFSET_Y = -24f      /** Vertical offset for bounce animation in dp */
-private const val PRESS_SCALE = 0.92f         /** Scale factor when die is pressed */
-private const val ROTATION_DURATION_MS = 700  /** Duration of one full rotation in milliseconds */
-private const val ROTATION_DEGREES = 360f     /** Rotation degrees for rolling dice */
-
-/**
- * Composable function to display a single dice.
+ * Displays a single die with support for:
+ * - Rolling animation (bounce + rotation)
+ * - Held state visualization
+ * - Press interaction feedback
  *
- * Displays a die with animation for rolling and visual cues for held or pressed state.
- * Supports click interactions through [onClick].
+ * This composable is stateless and fully driven by input parameters.
  *
- * @param value Current dice value (1-6), defaults to blank if out of range.
- * @param isHeld Whether the die is locked/held. Alters background.
- * @param isRolling Whether the die is rolling. Triggers bounce and rotation animations.
- * @param onClick Lambda to be called when the die is clicked.
+ * @param value Current dice value (1–6). Invalid values render a blank die.
+ * @param isHeld Whether the die is currently held (locked).
+ * @param isRolling Whether the die is actively rolling.
+ * @param onClick Callback invoked when the die is tapped.
  */
 @Composable
 fun DiceView(
@@ -61,23 +51,19 @@ fun DiceView(
     isRolling: Boolean,
     onClick: () -> Unit
 ) {
-    /** Tracks press state for scaling effect */
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
-    /** Determines if animations should run for this die */
     val shouldAnimate = isRolling && !isHeld
 
-    /** Infinite transition for bounce and rotation animations */
     val transition = rememberInfiniteTransition(label = "dice_transition")
 
-    /** Animated scale for bounce effect */
     val animatedScale = transition.animateFloat(
-        initialValue = BOUNCE_SCALE_MIN,
-        targetValue = BOUNCE_SCALE_MAX,
+        initialValue = UiConstants.DiceBounceScaleMin,
+        targetValue = UiConstants.DiceBounceScaleMax,
         animationSpec = infiniteRepeatable(
             animation = tween(
-                durationMillis = BOUNCE_DURATION_MS,
+                durationMillis = UiConstants.DiceBounceDurationMs,
                 easing = FastOutSlowInEasing
             ),
             repeatMode = RepeatMode.Reverse
@@ -85,13 +71,12 @@ fun DiceView(
         label = "scale_anim"
     )
 
-    /** Animated vertical offset for bounce effect */
     val animatedOffsetY = transition.animateFloat(
         initialValue = 0f,
-        targetValue = BOUNCE_OFFSET_Y,
+        targetValue = -Dimens.DiceBounceOffset.value,
         animationSpec = infiniteRepeatable(
             animation = tween(
-                durationMillis = BOUNCE_DURATION_MS,
+                durationMillis = UiConstants.DiceBounceDurationMs,
                 easing = FastOutSlowInEasing
             ),
             repeatMode = RepeatMode.Reverse
@@ -99,51 +84,40 @@ fun DiceView(
         label = "offset_anim"
     )
 
-    /** Animated rotation for rolling effect */
     val animatedRotation = transition.animateFloat(
         initialValue = 0f,
-        targetValue = ROTATION_DEGREES,
+        targetValue = UiConstants.DiceRotationDegrees,
         animationSpec = infiniteRepeatable(
             animation = tween(
-                durationMillis = ROTATION_DURATION_MS,
+                durationMillis = UiConstants.DiceRotationDurationMs,
                 easing = LinearEasing
             )
         ),
         label = "rotation_anim"
     )
 
-    /** Current scale based on rolling or pressed state */
-    val scale = if (shouldAnimate) {
-        animatedScale.value
-    } else {
-        if (isPressed) PRESS_SCALE else BOUNCE_SCALE_MIN
+    val scale = when {
+        shouldAnimate -> animatedScale.value
+        isPressed -> UiConstants.DicePressScale
+        else -> UiConstants.DiceBounceScaleMin
     }
 
-    /** Current vertical offset based on animation */
     val offsetY = if (shouldAnimate) {
         animatedOffsetY.value.dp
     } else {
         0.dp
     }
 
-    /** Current rotation value based on animation */
-    val rotationValue = if (shouldAnimate) {
-        animatedRotation.value
-    } else {
-        0f
-    }
+    val rotation = if (shouldAnimate) animatedRotation.value else 0f
 
-    /** Background color and shape for held dice */
     val backgroundColor = if (isHeld) {
         colorResource(id = R.color.dice_held_background)
     } else {
         Color.Transparent
     }
 
-    /** Corner shape applied to the held die background container */
-    val backgroundShape = RoundedCornerShape(Dimens.DiceHeldCornerRadius)
+    val shape = RoundedCornerShape(Dimens.DiceHeldCornerRadius)
 
-    /** Drawable resource ID for the current dice value */
     val drawableId = when (value) {
         1 -> R.drawable.dice_1
         2 -> R.drawable.dice_2
@@ -154,16 +128,13 @@ fun DiceView(
         else -> R.drawable.dice_blank
     }
 
-    /** Box composable holding the die image, animations, and click handling */
     Box(
         modifier = Modifier
-            .offset(y = DICE_OFFSET_Y_DP.dp + offsetY)
-            .size(DICE_SIZE_DP.dp)
+            .offset(y = Dimens.DiceVerticalOffset + offsetY)
+            .size(Dimens.DiceSize)
             .scale(scale)
-            .graphicsLayer {
-                rotationZ = rotationValue
-            }
-            .background(color = backgroundColor, shape = backgroundShape)
+            .graphicsLayer { rotationZ = rotation }
+            .background(color = backgroundColor, shape = shape)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -173,16 +144,13 @@ fun DiceView(
         Image(
             painter = painterResource(id = drawableId),
             contentDescription = "Die showing $value",
-            modifier = Modifier.size(DICE_SIZE_DP.dp)
+            modifier = Modifier.size(Dimens.DiceSize)
         )
     }
 }
 
 /**
- * Preview of the DiceView composable in both default and held states.
- *
- * This preview is used for visual verification during development and does not
- * participate in application runtime logic.
+ * Preview used for visual validation of DiceView behavior.
  */
 @Preview(showBackground = true)
 @Composable

@@ -147,6 +147,31 @@ object Dimens {
     val DiceHorizontalSpacing = 8.dp
 
     // ------------------------------------------------------------------------
+// DiceView Layout (Component-Specific)
+// ------------------------------------------------------------------------
+
+    /**
+     * Fixed size of an individual die component.
+     *
+     * Ensures consistent rendering across all dice in the game.
+     */
+    val DiceSize = 120.dp
+
+    /**
+     * Base vertical offset applied to dice within their container.
+     *
+     * Used to visually position dice higher within their layout region.
+     */
+    val DiceVerticalOffset = 48.dp
+
+    /**
+     * Vertical translation distance used during bounce animation.
+     *
+     * Negative value moves the die upward during animation.
+     */
+    val DiceBounceOffset = (-24).dp
+
+    // ------------------------------------------------------------------------
     // Score Sheet Layout
     // ------------------------------------------------------------------------
 

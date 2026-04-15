@@ -113,16 +113,48 @@ object UiConstants {
     const val LockedRowAlpha = 0.4f
 
     // ------------------------------------------------------------------------
-    // Dice
-    // ------------------------------------------------------------------------
+// Dice - Animation & Interaction
+// ------------------------------------------------------------------------
 
     /**
-     * Aspect ratio for the dice drawable (width / height).
+     * Minimum scale applied during dice bounce animation.
      */
-    const val DiceAspectRatio = 0.8f
+    const val DiceBounceScaleMin = 1.0f
 
     /**
-     * Duration in milliseconds for the dice rolling animation.
+     * Maximum scale applied during dice bounce animation.
+     */
+    const val DiceBounceScaleMax = 1.08f
+
+    /**
+     * Duration of one bounce animation cycle in milliseconds.
+     */
+    const val DiceBounceDurationMs = 400
+
+    /**
+     * Scale applied when the die is pressed.
+     */
+    const val DicePressScale = 0.92f
+
+    /**
+     * Duration of one full dice rotation cycle in milliseconds.
+     */
+    const val DiceRotationDurationMs = 700
+
+    /**
+     * Total degrees rotated during one animation cycle.
+     */
+    const val DiceRotationDegrees = 360f
+
+    /**
+     * Duration in milliseconds for the dice rolling phase.
+     *
+     * This represents the logical roll duration used by the game flow,
+     * not the visual animation cycle timing.
+     *
+     * Must remain separate from animation timing to support:
+     * - Deterministic game flow
+     * - Future multiplayer synchronization
      */
     const val DiceRollDurationMs = 600L
 
