@@ -55,6 +55,11 @@ object UiConstants {
     // ------------------------------------------------------------------------
 
     /**
+     * Number of dice used in the game.
+     */
+    const val DiceCount = 5
+
+    /**
      * Vertical layout weight assigned to the dice display section.
      */
     const val DiceSectionWeight = 0.36f

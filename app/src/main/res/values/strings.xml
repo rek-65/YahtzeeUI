@@ -17,6 +17,7 @@
 
     <!-- Game Over Dialog -->
     <string name="dialog_game_over_title">Game Over</string>
+    <string name="dialog_game_over_score_line">Player %1$d: %2$d</string>
     <string name="dialog_game_over_winner">Player %1$d Wins!</string>
 
     <!-- Yahtzee Celebration -->

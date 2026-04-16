@@ -13,16 +13,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,7 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import com.rekcode.yahtzee.R
 import com.rekcode.yahtzee.api.ScoreCategory
-import com.rekcode.yahtzee.api.YahtzeeGame
+import com.rekcode.yahtzee.api.ScoreSheetItem
 import com.rekcode.yahtzee.ui.components.DiceView
 import com.rekcode.yahtzee.ui.theme.Dimens
 import com.rekcode.yahtzee.ui.theme.UiConstants
@@ -45,47 +43,21 @@ import kotlinx.coroutines.launch
  * Composable representing the primary game screen layout using
  * deterministic vertical partitioning and real score data binding.
  *
- * <p>Responsibilities:</p>
- * <ul>
- *   <li>Enforce fixed screen regions (dice, score, actions)</li>
- *   <li>Render score data directly from game controller</li>
- *   <li>Emit user interaction intents to the root layer</li>
- * </ul>
- *
- * <p>This composable does not perform navigation, contain business logic,
- * or manage game rules.</p>
- *
- * @param controller The game engine instance providing all game state.
+ * @param coordinator Coordinator that owns Game UI state and flow transitions.
  * @param onExitRequested Callback invoked when the user requests to leave the game screen.
  * @param onPlayAgainRequested Callback invoked when the user chooses to start a new game
  *                             with the same player count after game over.
  */
 @Composable
 fun GameScreen(
-    controller: YahtzeeGame,
+    coordinator: GameCoordinator,
     onExitRequested: () -> Unit,
     onPlayAgainRequested: () -> Unit
 ) {
-    /**
-     * Reactive current player index sourced from the engine.
-     * Updated after each call to controller.nextPlayer().
-     */
-    var currentPlayerIndex by remember { mutableIntStateOf(controller.getCurrentPlayerIndex()) }
+    val uiState = coordinator.uiState
 
-    /**
-     * Reactive score sheet for the active player.
-     * Updated after each turn to reflect the next player's scores.
-     */
-    var scoreSheet by remember { mutableStateOf(controller.getScoreSheet(currentPlayerIndex)) }
-
-    /**
-     * Memoized split of the score sheet into upper and lower sections.
-     *
-     * <p>This computation is dependent only on the current score sheet and
-     * is cached to avoid repeated work during recomposition.</p>
-     */
-    val (upperSection, lowerSection) = remember(scoreSheet) {
-        val splitIndex = scoreSheet.indexOfFirst {
+    val (upperSection, lowerSection) = remember(uiState.scoreSheet) {
+        val splitIndex = uiState.scoreSheet.indexOfFirst {
             it.displayName.equals(
                 UiConstants.ScoreSectionLowerBoundaryName,
                 ignoreCase = true
@@ -94,82 +66,15 @@ fun GameScreen(
 
         if (splitIndex != -1) {
             Pair(
-                scoreSheet.subList(0, splitIndex),
-                scoreSheet.subList(splitIndex, scoreSheet.size)
+                uiState.scoreSheet.subList(0, splitIndex),
+                uiState.scoreSheet.subList(splitIndex, uiState.scoreSheet.size)
             )
         } else {
-            Pair(scoreSheet, emptyList())
-        }
-    }
-
-    var isRolling by remember { mutableStateOf(false) }
-
-    /**
-     * Current face values of all five dice.
-     * Initialized to zero so [DiceView] renders a blank die before the first roll.
-     * Updated from the game engine after each roll.
-     */
-    var diceValues by remember { mutableStateOf(List(5) { 0 }) }
-
-    /**
-     * Held state for each die.
-     * Will be replaced by values provided directly from the game engine.
-     */
-    var heldStates by remember { mutableStateOf(List(5) { false }) }
-
-    /**
-     * Whether the roll action is currently enabled.
-     * Will be replaced by values provided directly from the game engine.
-     */
-    var isRollEnabled by remember { mutableStateOf(true) }
-
-    var showGameOverDialog by remember { mutableStateOf(false) }
-
-    /**
-     * Live preview of potential scores based on current dice values.
-     * Null before the first roll. Populated from the engine after each roll
-     * and cleared on turn completion to prevent stale previews.
-     */
-    var previewSheet by remember { mutableStateOf<List<com.rekcode.yahtzee.api.ScoreSheetItem>?>(null) }
-
-    /**
-     * Controls visibility of the Yahtzee celebration overlay.
-     * Set to true when [controller.previewScores] confirms a Yahtzee event.
-     * Auto-dismissed after [UiConstants.YahtzeeCelebrationDurationMs] elapses.
-     */
-    var showYahtzeeCelebration by remember { mutableStateOf(false) }
-
-    /**
-     * Handles die tap interactions.
-     * Guards against hold attempts before the first roll, as blank dice
-     * have no valid hold state. Only toggles hold state when the engine
-     * confirms a roll has occurred.
-     */
-    val onDieClick: (Int) -> Unit = { index ->
-        if (controller.hasRolled()) {
-            heldStates = controller.setDieHold(index, !heldStates[index]).toMutableList()
+            Pair(uiState.scoreSheet, emptyList())
         }
     }
 
     val coroutineScope = rememberCoroutineScope()
-
-    /**
-     * Handles score selection for a given category and updates all related UI state.
-     *
-     * @param category The selected score category.
-     */
-    fun handleScoreSelection(category: com.rekcode.yahtzee.api.ScoreCategory) {
-        controller.score(category)
-        currentPlayerIndex = controller.getCurrentPlayerIndex()
-        scoreSheet = controller.getScoreSheet(currentPlayerIndex)
-        diceValues = List(5) { 0 }
-        heldStates = List(5) { false }
-        isRollEnabled = controller.canRoll()
-        previewSheet = null
-        if (controller.isGameOver()) {
-            showGameOverDialog = true
-        }
-    }
 
     Column(
         modifier = Modifier
@@ -183,10 +88,12 @@ fun GameScreen(
             verticalArrangement = Arrangement.Top
         ) {
             DiceSection(
-                diceValues = diceValues,
-                heldStates = heldStates,
-                isRolling = isRolling,
-                onDieClick = onDieClick
+                diceValues = uiState.diceValues,
+                heldStates = uiState.heldStates,
+                isRolling = uiState.isRolling,
+                onDieClick = { index ->
+                    coordinator.onDieClicked(index)
+                }
             )
         }
 
@@ -194,15 +101,13 @@ fun GameScreen(
             modifier = Modifier.weight(UiConstants.ScoreSectionWeight)
         ) {
             ScoreSection(
-                currentPlayerIndex = currentPlayerIndex,
+                currentPlayerIndex = uiState.currentPlayerIndex,
                 upperSection = upperSection,
                 lowerSection = lowerSection,
-                previewSheet = previewSheet,
-                upperBonusValue = controller
-                    .getUpperSectionBonusStatus(currentPlayerIndex)
-                    .bonusAmount,
+                previewSheet = uiState.previewSheet,
+                upperBonusValue = uiState.upperBonusValue,
                 onScoreSelected = { category ->
-                    handleScoreSelection(category)
+                    coordinator.onScoreSelected(category)
                 }
             )
         }
@@ -211,36 +116,31 @@ fun GameScreen(
             modifier = Modifier.weight(UiConstants.ActionSectionWeight)
         ) {
             ActionSection(
-                isRollEnabled = isRollEnabled,
+                isRollEnabled = uiState.isRollEnabled,
                 onRollRequested = {
                     coroutineScope.launch {
-                        isRolling = true
+                        coordinator.beginRoll()
                         delay(UiConstants.DiceRollDurationMs)
-                        controller.rollDice()
-                        diceValues = controller.getCurrentDice()
-                        isRollEnabled = controller.canRoll()
-                        previewSheet = controller.previewScores()
-                        isRolling = false
-                        val isYahtzee = previewSheet
-                            ?.find { it.category == ScoreCategory.YAHTZEE }
-                            ?.score == 50
+                        coordinator.onRollCompleted()
+
+                        val isYahtzee = coordinator.uiState.showYahtzeeCelebration
                         if (isYahtzee) {
-                            showYahtzeeCelebration = true
                             delay(UiConstants.YahtzeeCelebrationDurationMs)
-                            showYahtzeeCelebration = false
+                            coordinator.dismissYahtzeeCelebration()
                         }
                     }
                 },
                 onExitRequested = onExitRequested
             )
         }
-        if (showGameOverDialog) {
-            androidx.compose.material3.AlertDialog(
+
+        if (uiState.showGameOverDialog) {
+            AlertDialog(
                 onDismissRequest = {},
                 confirmButton = {
                     OutlinedButton(
                         onClick = {
-                            showGameOverDialog = false
+                            coordinator.dismissGameOver()
                             onPlayAgainRequested()
                         },
                         colors = ButtonDefaults.outlinedButtonColors(
@@ -279,12 +179,25 @@ fun GameScreen(
                     )
                 },
                 text = {
-                    val winnerIndex = controller.getWinnerIndex() ?: 0
-                    val scoreLines = (0 until controller.getPlayerCount()).joinToString(separator = "\n") { index ->
-                        "Player ${index + 1}: ${controller.getPlayerFinalScore(index)}"
-                    }
+                    val scores = uiState.finalScores ?: emptyList()
+                    val winner = uiState.winnerIndex ?: 0
+                    val scoreLines = scores
+                        .mapIndexed { index, score ->
+                            stringResource(
+                                id = R.string.dialog_game_over_score_line,
+                                index + 1,
+                                score
+                            )
+                        }
+                        .joinToString(separator = "\n")
+
+                    val winnerLine = stringResource(
+                        id = R.string.dialog_game_over_winner,
+                        winner + 1
+                    )
+
                     Text(
-                        text = "$scoreLines\n\n${stringResource(id = R.string.dialog_game_over_winner, winnerIndex + 1)}",
+                        text = "$scoreLines\n\n$winnerLine",
                         fontSize = Dimens.ScoreTextSize,
                         color = colorResource(id = R.color.text_on_table)
                     )
@@ -293,7 +206,7 @@ fun GameScreen(
             )
         }
 
-        if (showYahtzeeCelebration) {
+        if (uiState.showYahtzeeCelebration) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -378,15 +291,16 @@ fun DiceSection(
  * @param previewSheet Optional preview score sheet.
  * @param upperBonusValue Current upper section bonus value.
  * @param onScoreSelected Callback when a score category is selected.
+ * @param modifier Modifier applied to the root score section container.
  */
 @Composable
 fun ScoreSection(
     currentPlayerIndex: Int,
-    upperSection: List<com.rekcode.yahtzee.api.ScoreSheetItem>,
-    lowerSection: List<com.rekcode.yahtzee.api.ScoreSheetItem>,
-    previewSheet: List<com.rekcode.yahtzee.api.ScoreSheetItem>?,
+    upperSection: List<ScoreSheetItem>,
+    lowerSection: List<ScoreSheetItem>,
+    previewSheet: List<ScoreSheetItem>?,
     upperBonusValue: Int,
-    onScoreSelected: (com.rekcode.yahtzee.api.ScoreCategory) -> Unit,
+    onScoreSelected: (ScoreCategory) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -460,18 +374,19 @@ fun ScoreSection(
  */
 @Composable
 fun ScoreRowList(
-    entries: List<com.rekcode.yahtzee.api.ScoreSheetItem>,
-    previewSheet: List<com.rekcode.yahtzee.api.ScoreSheetItem>?,
-    onScoreSelected: (com.rekcode.yahtzee.api.ScoreCategory) -> Unit
+    entries: List<ScoreSheetItem>,
+    previewSheet: List<ScoreSheetItem>?,
+    onScoreSelected: (ScoreCategory) -> Unit
 ) {
     entries.forEachIndexed { index, entry ->
         ScoreRow(
             label = stringResource(id = entry.category.toDisplayStringRes()),
             value = resolveScoreDisplayValue(entry, previewSheet),
-            backgroundColor = if (index % 2 == 0)
+            backgroundColor = if (index % 2 == 0) {
                 UiConstants.ScoreRowEvenBackground
-            else
-                UiConstants.ScoreRowOddBackground,
+            } else {
+                UiConstants.ScoreRowOddBackground
+            },
             isClickable = !entry.isLocked,
             isLocked = entry.isLocked,
             onClick = {
@@ -515,7 +430,8 @@ fun ScoreRow(
     onClick: () -> Unit = {}
 ) {
     val resolvedTextColor = when {
-        isLocked -> colorResource(id = R.color.text_on_table).copy(alpha = UiConstants.LockedRowAlpha)
+        isLocked -> colorResource(id = R.color.text_on_table)
+            .copy(alpha = UiConstants.LockedRowAlpha)
         isEmphasized -> colorResource(id = R.color.text_section_header)
         else -> colorResource(id = R.color.text_on_table)
     }
@@ -525,8 +441,11 @@ fun ScoreRow(
             .fillMaxWidth()
             .background(backgroundColor)
             .then(
-                if (isClickable) Modifier.clickable { onClick() }
-                else Modifier
+                if (isClickable) {
+                    Modifier.clickable { onClick() }
+                } else {
+                    Modifier
+                }
             )
             .padding(horizontal = Dimens.ScreenPadding)
     ) {
@@ -553,9 +472,9 @@ fun ScoreRow(
  *
  * <p>Priority:</p>
  * <ul>
- *   <li>Locked score → actual score</li>
- *   <li>Preview available → preview score</li>
- *   <li>Otherwise → placeholder</li>
+ *   <li>Locked score -> actual score</li>
+ *   <li>Preview available -> preview score</li>
+ *   <li>Otherwise -> placeholder</li>
  * </ul>
  *
  * @param entry The score sheet item representing the category.
@@ -563,8 +482,8 @@ fun ScoreRow(
  * @return String representation of the score for UI display.
  */
 private fun resolveScoreDisplayValue(
-    entry: com.rekcode.yahtzee.api.ScoreSheetItem,
-    previewSheet: List<com.rekcode.yahtzee.api.ScoreSheetItem>?
+    entry: ScoreSheetItem,
+    previewSheet: List<ScoreSheetItem>?
 ): String {
     return when {
         entry.isLocked -> entry.score?.toString() ?: "-"
