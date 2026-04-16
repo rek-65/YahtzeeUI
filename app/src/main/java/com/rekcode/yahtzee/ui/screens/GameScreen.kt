@@ -78,18 +78,28 @@ fun GameScreen(
      */
     var scoreSheet by remember { mutableStateOf(controller.getScoreSheet(currentPlayerIndex)) }
 
-    val splitIndex = scoreSheet.indexOfFirst {
-        it.displayName.equals(UiConstants.ScoreSectionLowerBoundaryName, ignoreCase = true)
-    }
-    val upperSection = if (splitIndex != -1) {
-        scoreSheet.subList(0, splitIndex)
-    } else {
-        scoreSheet
-    }
-    val lowerSection = if (splitIndex != -1) {
-        scoreSheet.subList(splitIndex, scoreSheet.size)
-    } else {
-        emptyList()
+    /**
+     * Memoized split of the score sheet into upper and lower sections.
+     *
+     * <p>This computation is dependent only on the current score sheet and
+     * is cached to avoid repeated work during recomposition.</p>
+     */
+    val (upperSection, lowerSection) = remember(scoreSheet) {
+        val splitIndex = scoreSheet.indexOfFirst {
+            it.displayName.equals(
+                UiConstants.ScoreSectionLowerBoundaryName,
+                ignoreCase = true
+            )
+        }
+
+        if (splitIndex != -1) {
+            Pair(
+                scoreSheet.subList(0, splitIndex),
+                scoreSheet.subList(splitIndex, scoreSheet.size)
+            )
+        } else {
+            Pair(scoreSheet, emptyList())
+        }
     }
 
     var isRolling by remember { mutableStateOf(false) }
@@ -143,6 +153,24 @@ fun GameScreen(
 
     val coroutineScope = rememberCoroutineScope()
 
+    /**
+     * Handles score selection for a given category and updates all related UI state.
+     *
+     * @param category The selected score category.
+     */
+    fun handleScoreSelection(category: com.rekcode.yahtzee.api.ScoreCategory) {
+        controller.score(category)
+        currentPlayerIndex = controller.getCurrentPlayerIndex()
+        scoreSheet = controller.getScoreSheet(currentPlayerIndex)
+        diceValues = List(5) { 0 }
+        heldStates = List(5) { false }
+        isRollEnabled = controller.canRoll()
+        previewSheet = null
+        if (controller.isGameOver()) {
+            showGameOverDialog = true
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -154,213 +182,57 @@ fun GameScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(Dimens.DiceSpacing),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(
-                        space = Dimens.DiceHorizontalSpacing,
-                        alignment = Alignment.CenterHorizontally
-                    )
-                ) {
-                    DiceView(diceValues[0], heldStates[0], isRolling) { onDieClick(0) }
-                    DiceView(diceValues[1], heldStates[1], isRolling) { onDieClick(1) }
-                    DiceView(diceValues[2], heldStates[2], isRolling) { onDieClick(2) }
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(
-                        space = Dimens.DiceHorizontalSpacing,
-                        alignment = Alignment.CenterHorizontally
-                    )
-                ) {
-                    DiceView(diceValues[3], heldStates[3], isRolling) { onDieClick(3) }
-                    DiceView(diceValues[4], heldStates[4], isRolling) { onDieClick(4) }
-                }
-            }
-        }
-
-        Column(
-            modifier = Modifier
-                .weight(UiConstants.ScoreSectionWeight)
-                .padding(horizontal = Dimens.ScreenPadding),
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.Top
-        ) {
-            Text(
-                text = stringResource(
-                    id = R.string.label_player,
-                    currentPlayerIndex + 1
-                ),
-                fontSize = Dimens.PlayerHeaderTextSize,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = Dimens.PlayerHeaderBottomSpacing),
-                textAlign = TextAlign.Center,
-                color = colorResource(id = R.color.text_on_table)
+            DiceSection(
+                diceValues = diceValues,
+                heldStates = heldStates,
+                isRolling = isRolling,
+                onDieClick = onDieClick
             )
-            Column(
-                verticalArrangement = Arrangement.spacedBy(Dimens.ScoreRowSpacing)
-            ) {
-                Text(
-                    text = stringResource(id = R.string.section_upper),
-                    fontSize = Dimens.ScoreTextSize,
-                    color = colorResource(id = R.color.text_section_header)
-                )
-                upperSection.forEachIndexed { index, entry ->
-                    ScoreRow(
-                        label = stringResource(id = entry.category.toDisplayStringRes()),
-                        value = when {
-                            entry.isLocked -> entry.score?.toString() ?: "-"
-                            previewSheet != null -> previewSheet!!
-                                .find { it.category == entry.category }
-                                ?.score?.toString() ?: "-"
-                            else -> "-"
-                        },
-                        backgroundColor = if (index % 2 == 0)
-                            UiConstants.ScoreRowEvenBackground
-                        else
-                            UiConstants.ScoreRowOddBackground,
-                        isClickable = !entry.isLocked,
-                        isLocked = entry.isLocked,
-                        onClick = {
-                            if (!entry.isLocked) {
-                                controller.score(entry.category)
-                                currentPlayerIndex = controller.getCurrentPlayerIndex()
-                                scoreSheet = controller.getScoreSheet(currentPlayerIndex)
-                                diceValues = List(5) { 0 }
-                                heldStates = List(5) { false }
-                                isRollEnabled = controller.canRoll()
-                                previewSheet = null
-                                if (controller.isGameOver()) {
-                                    showGameOverDialog = true
-                                }
-                            }
-                        }
-                    )
-                }
-                ScoreRow(
-                    label = stringResource(id = R.string.section_upper_bonus),
-                    value = controller.getUpperSectionBonusStatus(currentPlayerIndex).bonusAmount.toString(),
-                    backgroundColor = UiConstants.ScoreRowEvenBackground,
-                    isEmphasized = true
-                )
-                Spacer(modifier = Modifier.height(Dimens.SectionSpacing))
-                if (lowerSection.isNotEmpty()) {
-                    Text(
-                        text = stringResource(id = R.string.section_lower),
-                        fontSize = Dimens.ScoreTextSize,
-                        color = colorResource(id = R.color.text_section_header)
-                    )
-                    lowerSection.forEachIndexed { index, entry ->
-                        ScoreRow(
-                            label = stringResource(id = entry.category.toDisplayStringRes()),
-                            value = when {
-                                entry.isLocked -> entry.score?.toString() ?: "-"
-                                previewSheet != null -> previewSheet!!
-                                    .find { it.category == entry.category }
-                                    ?.score?.toString() ?: "-"
-                                else -> "-"
-                            },
-                            backgroundColor = if (index % 2 == 0)
-                                UiConstants.ScoreRowEvenBackground
-                            else
-                                UiConstants.ScoreRowOddBackground,
-                            isClickable = !entry.isLocked,
-                            isLocked = entry.isLocked,
-                            onClick = {
-                                if (!entry.isLocked) {
-                                    controller.score(entry.category)
-                                    currentPlayerIndex = controller.getCurrentPlayerIndex()
-                                    scoreSheet = controller.getScoreSheet(currentPlayerIndex)
-                                    diceValues = List(5) { 0 }
-                                    heldStates = List(5) { false }
-                                    isRollEnabled = controller.canRoll()
-                                    previewSheet = null
-                                    if (controller.isGameOver()) {
-                                        showGameOverDialog = true
-                                    }
-                                }
-                            }
-                        )
-                    }
-                }
-            }
         }
 
         Column(
-            modifier = Modifier
-                .weight(UiConstants.ActionSectionWeight)
-                .padding(
-                    horizontal = Dimens.ScreenPadding,
-                    vertical = Dimens.ScreenPadding
-                ),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+            modifier = Modifier.weight(UiConstants.ScoreSectionWeight)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(UiConstants.ButtonWidthFraction),
-                    horizontalArrangement = Arrangement.spacedBy(Dimens.ScreenPadding)
-                ) {
-                    OutlinedButton(
-                        onClick = {
-                            coroutineScope.launch {
-                                isRolling = true
-                                delay(UiConstants.DiceRollDurationMs)
-                                controller.rollDice()
-                                diceValues = controller.getCurrentDice()
-                                isRollEnabled = controller.canRoll()
-                                previewSheet = controller.previewScores()
-                                isRolling = false
-                                val isYahtzee = previewSheet
-                                    ?.find { it.category == ScoreCategory.YAHTZEE }
-                                    ?.score == 50
-                                if (isYahtzee) {
-                                    showYahtzeeCelebration = true
-                                    delay(UiConstants.YahtzeeCelebrationDurationMs)
-                                    showYahtzeeCelebration = false
-                                }
-                            }
-                        },
-                        enabled = isRollEnabled,
-                        modifier = Modifier.weight(UiConstants.ActionButtonWeight),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = colorResource(R.color.table_rail),
-                            contentColor = colorResource(R.color.text_on_table),
-                            disabledContainerColor = colorResource(R.color.button_disabled_background),
-                            disabledContentColor = colorResource(R.color.text_disabled)
-                        )
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.action_roll),
-                            fontWeight = UiConstants.ButtonLabelFontWeight,
-                            fontSize = Dimens.ButtonLabelFontSize
-                        )
-                    }
-
-                    OutlinedButton(
-                        onClick = onExitRequested,
-                        modifier = Modifier.weight(UiConstants.ActionButtonWeight),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = colorResource(R.color.table_rail),
-                            contentColor = colorResource(R.color.text_on_table)
-                        )
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.action_exit),
-                            fontWeight = UiConstants.ButtonLabelFontWeight,
-                            fontSize = Dimens.ButtonLabelFontSize
-                        )
-                    }
+            ScoreSection(
+                currentPlayerIndex = currentPlayerIndex,
+                upperSection = upperSection,
+                lowerSection = lowerSection,
+                previewSheet = previewSheet,
+                upperBonusValue = controller
+                    .getUpperSectionBonusStatus(currentPlayerIndex)
+                    .bonusAmount,
+                onScoreSelected = { category ->
+                    handleScoreSelection(category)
                 }
-            }
-            Spacer(modifier = Modifier.height(Dimens.SectionSpacing))
+            )
+        }
+
+        Column(
+            modifier = Modifier.weight(UiConstants.ActionSectionWeight)
+        ) {
+            ActionSection(
+                isRollEnabled = isRollEnabled,
+                onRollRequested = {
+                    coroutineScope.launch {
+                        isRolling = true
+                        delay(UiConstants.DiceRollDurationMs)
+                        controller.rollDice()
+                        diceValues = controller.getCurrentDice()
+                        isRollEnabled = controller.canRoll()
+                        previewSheet = controller.previewScores()
+                        isRolling = false
+                        val isYahtzee = previewSheet
+                            ?.find { it.category == ScoreCategory.YAHTZEE }
+                            ?.score == 50
+                        if (isYahtzee) {
+                            showYahtzeeCelebration = true
+                            delay(UiConstants.YahtzeeCelebrationDurationMs)
+                            showYahtzeeCelebration = false
+                        }
+                    }
+                },
+                onExitRequested = onExitRequested
+            )
         }
         if (showGameOverDialog) {
             androidx.compose.material3.AlertDialog(
@@ -446,6 +318,172 @@ fun GameScreen(
 }
 
 /**
+ * Renders the dice area of the game screen.
+ *
+ * <p>This composable is stateless and only reflects the current dice state.
+ * All interactions are delegated upward via callbacks.</p>
+ *
+ * @param diceValues Current face values of all dice.
+ * @param heldStates Current held state of each die.
+ * @param isRolling Whether dice animation is currently active.
+ * @param onDieClick Callback when a die is tapped.
+ */
+@Composable
+fun DiceSection(
+    diceValues: List<Int>,
+    heldStates: List<Boolean>,
+    isRolling: Boolean,
+    onDieClick: (Int) -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(Dimens.DiceSpacing),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(
+                    space = Dimens.DiceHorizontalSpacing,
+                    alignment = Alignment.CenterHorizontally
+                )
+            ) {
+                DiceView(diceValues[0], heldStates[0], isRolling) { onDieClick(0) }
+                DiceView(diceValues[1], heldStates[1], isRolling) { onDieClick(1) }
+                DiceView(diceValues[2], heldStates[2], isRolling) { onDieClick(2) }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(
+                    space = Dimens.DiceHorizontalSpacing,
+                    alignment = Alignment.CenterHorizontally
+                )
+            ) {
+                DiceView(diceValues[3], heldStates[3], isRolling) { onDieClick(3) }
+                DiceView(diceValues[4], heldStates[4], isRolling) { onDieClick(4) }
+            }
+        }
+    }
+}
+
+/**
+ * Renders the full score section including upper section, bonus, and lower section.
+ *
+ * @param currentPlayerIndex Active player index.
+ * @param upperSection Upper score entries.
+ * @param lowerSection Lower score entries.
+ * @param previewSheet Optional preview score sheet.
+ * @param upperBonusValue Current upper section bonus value.
+ * @param onScoreSelected Callback when a score category is selected.
+ */
+@Composable
+fun ScoreSection(
+    currentPlayerIndex: Int,
+    upperSection: List<com.rekcode.yahtzee.api.ScoreSheetItem>,
+    lowerSection: List<com.rekcode.yahtzee.api.ScoreSheetItem>,
+    previewSheet: List<com.rekcode.yahtzee.api.ScoreSheetItem>?,
+    upperBonusValue: Int,
+    onScoreSelected: (com.rekcode.yahtzee.api.ScoreCategory) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.padding(horizontal = Dimens.ScreenPadding),
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.Top
+    ) {
+        Text(
+            text = stringResource(
+                id = R.string.label_player,
+                currentPlayerIndex + 1
+            ),
+            fontSize = Dimens.PlayerHeaderTextSize,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = Dimens.PlayerHeaderBottomSpacing),
+            textAlign = TextAlign.Center,
+            color = colorResource(id = R.color.text_on_table)
+        )
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(Dimens.ScoreRowSpacing)
+        ) {
+            Text(
+                text = stringResource(id = R.string.section_upper),
+                fontSize = Dimens.ScoreTextSize,
+                color = colorResource(id = R.color.text_section_header)
+            )
+
+            ScoreRowList(
+                entries = upperSection,
+                previewSheet = previewSheet,
+                onScoreSelected = onScoreSelected
+            )
+
+            ScoreRow(
+                label = stringResource(id = R.string.section_upper_bonus),
+                value = upperBonusValue.toString(),
+                backgroundColor = UiConstants.ScoreRowEvenBackground,
+                isEmphasized = true
+            )
+
+            Spacer(modifier = Modifier.height(Dimens.SectionSpacing))
+
+            if (lowerSection.isNotEmpty()) {
+                Text(
+                    text = stringResource(id = R.string.section_lower),
+                    fontSize = Dimens.ScoreTextSize,
+                    color = colorResource(id = R.color.text_section_header)
+                )
+
+                ScoreRowList(
+                    entries = lowerSection,
+                    previewSheet = previewSheet,
+                    onScoreSelected = onScoreSelected
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Renders a list of score rows for a given section.
+ *
+ * <p>This composable is stateless and only responsible for rendering
+ * score entries. Interaction is delegated via callback.</p>
+ *
+ * @param entries List of score sheet items to render.
+ * @param previewSheet Optional preview score sheet.
+ * @param onScoreSelected Callback invoked when a score category is selected.
+ */
+@Composable
+fun ScoreRowList(
+    entries: List<com.rekcode.yahtzee.api.ScoreSheetItem>,
+    previewSheet: List<com.rekcode.yahtzee.api.ScoreSheetItem>?,
+    onScoreSelected: (com.rekcode.yahtzee.api.ScoreCategory) -> Unit
+) {
+    entries.forEachIndexed { index, entry ->
+        ScoreRow(
+            label = stringResource(id = entry.category.toDisplayStringRes()),
+            value = resolveScoreDisplayValue(entry, previewSheet),
+            backgroundColor = if (index % 2 == 0)
+                UiConstants.ScoreRowEvenBackground
+            else
+                UiConstants.ScoreRowOddBackground,
+            isClickable = !entry.isLocked,
+            isLocked = entry.isLocked,
+            onClick = {
+                if (!entry.isLocked) {
+                    onScoreSelected(entry.category)
+                }
+            }
+        )
+    }
+}
+
+/**
  * Stateless UI component representing a single row in the score sheet.
  *
  * <p>Responsibilities:</p>
@@ -507,5 +545,102 @@ fun ScoreRow(
             modifier = Modifier.width(Dimens.ScoreValueWidth),
             textAlign = TextAlign.End
         )
+    }
+}
+
+/**
+ * Resolves the display value for a score row based on lock state and preview data.
+ *
+ * <p>Priority:</p>
+ * <ul>
+ *   <li>Locked score → actual score</li>
+ *   <li>Preview available → preview score</li>
+ *   <li>Otherwise → placeholder</li>
+ * </ul>
+ *
+ * @param entry The score sheet item representing the category.
+ * @param previewSheet Optional preview score sheet.
+ * @return String representation of the score for UI display.
+ */
+private fun resolveScoreDisplayValue(
+    entry: com.rekcode.yahtzee.api.ScoreSheetItem,
+    previewSheet: List<com.rekcode.yahtzee.api.ScoreSheetItem>?
+): String {
+    return when {
+        entry.isLocked -> entry.score?.toString() ?: "-"
+        previewSheet != null -> previewSheet
+            .find { it.category == entry.category }
+            ?.score?.toString() ?: "-"
+        else -> "-"
+    }
+}
+
+/**
+ * Renders the primary action area for the game screen.
+ *
+ * @param isRollEnabled Whether the roll button is currently enabled.
+ * @param onRollRequested Callback invoked when the roll action is requested.
+ * @param onExitRequested Callback invoked when the exit action is requested.
+ * @param modifier Modifier applied to the root container of the action section.
+ */
+@Composable
+fun ActionSection(
+    isRollEnabled: Boolean,
+    onRollRequested: () -> Unit,
+    onExitRequested: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.padding(
+            horizontal = Dimens.ScreenPadding,
+            vertical = Dimens.ScreenPadding
+        ),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(UiConstants.ButtonWidthFraction),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.ScreenPadding)
+            ) {
+                OutlinedButton(
+                    onClick = onRollRequested,
+                    enabled = isRollEnabled,
+                    modifier = Modifier.weight(UiConstants.ActionButtonWeight),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = colorResource(R.color.table_rail),
+                        contentColor = colorResource(R.color.text_on_table),
+                        disabledContainerColor = colorResource(R.color.button_disabled_background),
+                        disabledContentColor = colorResource(R.color.text_disabled)
+                    )
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.action_roll),
+                        fontWeight = UiConstants.ButtonLabelFontWeight,
+                        fontSize = Dimens.ButtonLabelFontSize
+                    )
+                }
+
+                OutlinedButton(
+                    onClick = onExitRequested,
+                    modifier = Modifier.weight(UiConstants.ActionButtonWeight),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = colorResource(R.color.table_rail),
+                        contentColor = colorResource(R.color.text_on_table)
+                    )
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.action_exit),
+                        fontWeight = UiConstants.ButtonLabelFontWeight,
+                        fontSize = Dimens.ButtonLabelFontSize
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(Dimens.SectionSpacing))
     }
 }
